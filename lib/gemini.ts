@@ -24,7 +24,7 @@ function getClient(): GoogleGenerativeAI {
 export async function askGemini(prompt: string, systemInstruction?: string) {
   const genAI = getClient();
   const model = genAI.getGenerativeModel({
-    model: "gemini-2.0-flash",
+    model: "gemini-2.5-flash",
     systemInstruction:
       systemInstruction ??
       "You are the SmalBlu Grant Intelligence Assistant. SmalBlu is a startup that discovers and tracks global grant funding opportunities. Be concise, cite concrete figures (amounts, deadlines) when known, and format lists with short bullet points.",
@@ -44,7 +44,7 @@ export async function rankGrantsWithGemini(
 ) {
   const genAI = getClient();
   const model = genAI.getGenerativeModel({
-    model: "gemini-2.0-flash",
+    model: "gemini-2.5-flash",
     generationConfig: { responseMimeType: "application/json" },
   });
 

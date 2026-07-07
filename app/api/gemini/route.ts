@@ -11,12 +11,38 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const mode = body.mode ?? "chat";
 
-    if (mode === "chat") {
+   
+      if (mode === "chat") {
       const { message } = body;
       if (!message) {
         return NextResponse.json({ error: "message is required" }, { status: 400 });
       }
-      const reply = await askGemini(message);
+
+      // Fetch real grants from your own DB and from Grants.gov,
+      // so Gemini answers using actual data instead of guessing.
+      const ownGrants = hasDatabase && prisma ? await prisma.grant.findMany() : demoGrants;
+
+      const origin = req.nextUrl.origin;
+      let globalGrants: any[] = [];
+      try {
+        const globalRes = await fetch(`${origin}/api/grants/global`);
+        const globalData = await globalRes.json();
+        globalGrants = globalData.grants ?? [];
+      } catch {
+        globalGrants = [];
+      }
+
+      const combined = [...ownGrants, ...globalGrants].map((g: any) => ({
+        id: g.id,
+        title: g.title,
+        organization: g.organization,
+        country: g.country,
+        category: g.category,
+        amount: g.amount,
+        deadline: typeof g.deadline === "string" ? g.deadline : g.deadline?.toISOString?.() ?? "",
+      }));
+
+      const reply = await askGemini(message, undefined, combined);
       return NextResponse.json({ reply });
     }
 

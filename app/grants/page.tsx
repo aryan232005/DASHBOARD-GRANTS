@@ -23,13 +23,19 @@ export default function GrantsPage() {
   const [ranking, setRanking] = useState(false);
   const [ranked, setRanked] = useState<Record<string, { fitScore: number; reason: string }>>({});
 
-  useEffect(() => {
-    fetch("/api/grants")
-      .then((r) => r.json())
-      .then((d) => setGrants(d.grants))
+ useEffect(() => {
+    Promise.all([
+      fetch("/api/grants").then((r) => r.json()),
+      fetch("/api/grants/global").then((r) => r.json()),
+    ])
+      .then(([ownData, globalData]) => {
+        const ownGrants = ownData.grants ?? [];
+        const globalGrants = globalData.grants ?? [];
+        setGrants([...ownGrants, ...globalGrants]);
+      })
       .finally(() => setLoading(false));
   }, []);
-
+  
   async function trackGrant(grantId: string) {
     await fetch("/api/applied", {
       method: "POST",
