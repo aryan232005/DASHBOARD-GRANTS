@@ -57,7 +57,7 @@ export async function rankGrantsWithGemini(
   // together with search tools on Gemini's API).
   const searchModel = genAI.getGenerativeModel({
     model: "gemini-2.5-flash",
-    tools: [{ googleSearch: {} }],
+    tools: [{ googleSearch: {} }] as any,
   });
   const searchPrompt = `Search the web for 3-5 REAL, currently open grant or funding opportunities anywhere in the world that would genuinely fit this startup profile: "${profile}". For each one, list: title, organization, country, approximate amount if known, deadline if known, and a source URL. Keep it brief.`;
   const searchResult = await searchModel.generateContent(searchPrompt);
