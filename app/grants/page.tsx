@@ -35,7 +35,7 @@ export default function GrantsPage() {
       })
       .finally(() => setLoading(false));
   }, []);
-  
+
   async function trackGrant(grantId: string) {
     await fetch("/api/applied", {
       method: "POST",
@@ -54,9 +54,37 @@ export default function GrantsPage() {
         body: JSON.stringify({ mode: "rank", profile: "SmalBlu — early-stage AI SaaS startup focused on applied ML tooling." }),
       });
       const data = await res.json();
+      const rankedList = data.ranked ?? [];
+
       const map: Record<string, { fitScore: number; reason: string }> = {};
-      (data.ranked ?? []).forEach((r: any) => (map[r.id] = r));
+      rankedList.forEach((r: any) => (map[r.id] = r));
       setRanked(map);
+
+      // Any result marked "live-search" isn't in our existing grants list yet —
+      // turn those into real Grant objects so they render as their own cards.
+      const newLiveGrants: Grant[] = rankedList
+        .filter((r: any) => r.source === "live-search")
+        .map((r: any) => ({
+          id: r.id,
+          title: r.title ?? "Untitled opportunity",
+          organization: r.organization ?? "Unknown organization",
+          country: r.country ?? "Unknown",
+          category: "General",
+          amount: typeof r.amount === "number" ? r.amount : 0,
+          currency: "USD",
+          deadline: r.deadline ?? "",
+          description: "Found via live Gemini web search based on your startup profile.",
+          tags: ["Live search"],
+        }));
+
+      setGrants((prev) => {
+        const existingIds = new Set(prev.map((g) => g.id));
+        const merged = [...prev];
+        newLiveGrants.forEach((g) => {
+          if (!existingIds.has(g.id)) merged.push(g);
+        });
+        return merged;
+      });
     } finally {
       setRanking(false);
     }
