@@ -29,7 +29,7 @@ export async function askGemini(
   const genAI = getClient();
   const model = genAI.getGenerativeModel({
     model: "gemini-2.5-flash",
-    tools: [{ googleSearch: {} }],
+   tools: [{ googleSearch: {} }] as any,
     systemInstruction:
       systemInstruction ??
       "You are the SmalBlu Grant Intelligence Assistant. SmalBlu is a startup that discovers and tracks global grant funding opportunities. You have access to live Google Search — use it whenever the user asks about grants, deadlines, or funding in any country or region, so your answer reflects real, current information from the web instead of guessing. Always mention where the information came from. Be concise, cite concrete figures (amounts, deadlines) when known, and format lists with short bullet points.",
